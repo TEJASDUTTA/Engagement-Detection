@@ -3,8 +3,8 @@ import numpy as np
 from time import sleep
 from keras.preprocessing.image import img_to_array
 
-face_classifier = cv2.CascadeClassifier(r'C:\Users\gupta\Downloads\ED\Engagement-Detection\cascades\haarcascade_frontalface_default.xml')
-eye_classifier = cv2.CascadeClassifier(r'C:\Users\gupta\Downloads\ED\Engagement-Detection\cascades\haarcascade_upperbody.xml')
+face_classifier = cv2.CascadeClassifier(r'cascades\haarcascade_frontalface_default.xml')
+eye_classifier = cv2.CascadeClassifier(r'cascades\haarcascade_lefteye_2splits.xml')
 
 def face_detector(img):
     # Convert image to grayscale
