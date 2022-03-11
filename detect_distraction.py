@@ -11,7 +11,7 @@ import imutils
 # t1 = time.time()
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-distract_model = load_model('distraction_model_bsar.hdf5', compile=False)
+distract_model = load_model('model2.hdf5', compile=False)
 
 # cap = cv2.VideoCapture("VideoFile.mp4")
 cap = cv2.VideoCapture(0)

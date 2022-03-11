@@ -46,17 +46,24 @@ def captureImages(state, no_of_images, countImages=0, count=0):
                 count += 1
                 if count %2 == 0:
                     roi_left = image[left_eye_landmarks[0][1]:left_eye_landmarks[2][1], left_eye_landmarks[0][0]:left_eye_landmarks[2][0]]
-                    hL, wL, _L = roi_left.shape
+                    roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
+                    roi_left = cv2.equalizeHist(roi_left)
+                    
+                    hL, wL = roi_left.shape
                     print("Images stored so far:", countImages)
                     print(hL, wL)
-                    if hL >= 60 and wL >= 60:
+                    if hL >= 40 and wL >= 40:
                         cv2.imwrite("data/" + dir + "/right_eye" + str(countImages) + ".jpg", roi_left)
                         countImages += 1
                     
                     roi_right = image[right_eye_landmarks[0][1]:right_eye_landmarks[2][1], right_eye_landmarks[0][0]:right_eye_landmarks[2][0]]
-                    hR, wR, _R = roi_right.shape
+                    roi_right = cv2.cvtColor(roi_right, cv2.COLOR_BGR2GRAY)
+                    roi_right = cv2.equalizeHist(roi_right)
 
-                    if hR >= 60 and wR >= 60:
+
+                    hR, wR = roi_right.shape
+
+                    if hR >= 40 and wR >= 40:
                         cv2.imwrite("data/" + dir + "/left_eye" + str(countImages) + ".jpg", roi_right)
                         countImages += 1
         cv2.imshow("Image", image)
