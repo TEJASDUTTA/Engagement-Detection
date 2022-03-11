@@ -11,7 +11,7 @@ import imutils
 # t1 = time.time()
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-distract_model = load_model('model2.hdf5', compile=False)
+distract_model = load_model("model3.hdf5", compile=False)
 
 # cap = cv2.VideoCapture("VideoFile.mp4")
 cap = cv2.VideoCapture(0)
@@ -23,7 +23,7 @@ def detect_distraction():
     
     while True:
         ret, image = cap.read()
-
+        img_width, img_height = 40, 40
         if ret != False:
             height, width, _ = image.shape
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -52,7 +52,7 @@ def detect_distraction():
                 # count += 1
                 # if count %2 == 0:
                 roi_left = image[left_eye_landmarks[0][1]:left_eye_landmarks[2][1], left_eye_landmarks[0][0]:left_eye_landmarks[2][0]]
-                roi_left = cv2.resize(roi_left, (64,64))
+                roi_left = cv2.resize(roi_left, (img_width, img_height))
 
                 roi_left = roi_left.astype("float") / 255.0
                 roi_left = img_to_array(roi_left)
@@ -68,7 +68,7 @@ def detect_distraction():
                     # countImages += 1
                     
                 roi_right = image[right_eye_landmarks[0][1]:right_eye_landmarks[2][1], right_eye_landmarks[0][0]:right_eye_landmarks[2][0]]
-                roi_right = cv2.resize(roi_right, (64,64))
+                roi_right = cv2.resize(roi_right, (img_width, img_height))
 
                 roi_right = roi_right.astype("float") / 255.0
                 roi_right = img_to_array(roi_right)
