@@ -9,7 +9,7 @@ import time
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-no_of_images = 20
+no_of_images = 50
 
 def captureImages(path, state):
     countImages=0
@@ -49,13 +49,11 @@ def captureImages(path, state):
 
             count += 1
 
-            if count%30 == 0:
+            if count%20 == 0:
                 roi_left = image[left_eye_landmarks[0][1]:left_eye_landmarks[2][1], left_eye_landmarks[0][0]:left_eye_landmarks[2][0]]
-                # roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
-                # roi_left = cv2.equalizeHist(roi_left)
-                roi_left[:][:][0] = cv2.equalizeHist(roi_left[:][:][0])
-                roi_left[:][:][1] = cv2.equalizeHist(roi_left[:][:][1])
-                roi_left[:][:][2] = cv2.equalizeHist(roi_left[:][:][2])
+                roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
+                roi_left = cv2.equalizeHist(roi_left)
+                
                 # print(roi_left.shape)
                 hL, wL, _ = roi_left.shape
                 # print("Images stored so far:", countImages)

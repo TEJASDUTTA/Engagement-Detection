@@ -18,12 +18,8 @@ def predict(image, landmarks):
     roi = image[landmarks[0][1]:landmarks[2][1], landmarks[0][0]:landmarks[2][0]]
     roi = cv2.resize(roi, (img_width, img_height))
     
-    # roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
-    roi[:][:][0] = cv2.equalizeHist(roi[:][:][0])
-    roi[:][:][1] = cv2.equalizeHist(roi[:][:][1])
-    roi[:][:][2] = cv2.equalizeHist(roi[:][:][2])
-    
-
+    roi = roi.astype("float") / 255.0
+    roi = img_to_array(roi)
     roi = np.expand_dims(roi, axis=0)
 
     prediction = distract_model.predict(roi)
