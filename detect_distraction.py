@@ -56,6 +56,11 @@ def detect_distraction():
                     j += 1
                     cv2.circle(image, (x,y), 2, (100, 100, 0), -1)
 
+            draw_lines = [left_eye_landmarks, right_eye_landmarks]
+            for i in draw_lines:
+                for j in range(4):
+                    cv2.line(image, i[j], i[(j+1)%4], (0, 255, 0), 1)
+            
             probs.append(predict(image, left_eye_landmarks))
             probs.append(predict(image, right_eye_landmarks))
 
