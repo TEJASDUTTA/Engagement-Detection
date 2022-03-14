@@ -10,7 +10,7 @@ import imutils
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-distract_model = load_model("model2.hdf5", compile=False)
+distract_model = load_model("model_50img_t1_28v_colab.hdf5", compile=False)
 img_width, img_height = 40, 40
 
 
@@ -73,7 +73,6 @@ def detect_distraction():
         cv2.imshow("Image", image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        cv2.waitKey(1)
     
     cap.release()
     cv2.destroyAllWindows()
