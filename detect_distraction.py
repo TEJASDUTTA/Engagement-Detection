@@ -29,6 +29,7 @@ def predict(image, landmarks):
 def detect_distraction():
     cap = cv2.VideoCapture(0)
     # cap = cv2.VideoCapture("/home/bsar/Downloads/distracted_Trim.mp4.mp4")
+    l=[]
     while True:
         ret, image = cap.read()
         # image = imutils.resize(image, width=400)
@@ -57,7 +58,7 @@ def detect_distraction():
                     else:
                         right_eye_landmarks.append([x,y])
                     j += 1
-                    cv2.circle(image, (x,y), 2, (100, 100, 0), -1)
+                    cv2.circle(image, (x,y), 5, (0, 255, 0), -1)
 
             draw_lines = [left_eye_landmarks, right_eye_landmarks]
             for i in draw_lines:
@@ -67,7 +68,7 @@ def detect_distraction():
             probs.append(predict(image, left_eye_landmarks))
             probs.append(predict(image, right_eye_landmarks))
 
-            print(probs)
+            # print(probs)
             probs_mean = np.mean(probs)
 
             if probs_mean <= 0.5:
@@ -77,11 +78,13 @@ def detect_distraction():
                 cv2.putText(image, "FOCUSED",(50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
             
-                
+        l.append(probs_mean)      
         cv2.imshow("Image", image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    
+
+    l=np.array(l)
+    print(np.mean(l))
     cap.release()
     cv2.destroyAllWindows()
 
