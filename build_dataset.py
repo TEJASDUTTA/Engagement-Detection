@@ -9,7 +9,7 @@ import time
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-no_of_images = 50
+no_of_images = 25
 
 def captureImages(path, state):
     countImages=0
@@ -51,27 +51,29 @@ def captureImages(path, state):
 
             if count%20 == 0:
                 roi_left = image[left_eye_landmarks[0][1]:left_eye_landmarks[2][1], left_eye_landmarks[0][0]:left_eye_landmarks[2][0]]
-                roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
-                roi_left = cv2.equalizeHist(roi_left)
-                
-                # print(roi_left.shape)
-                hL, wL, _ = roi_left.shape
-                # print("Images stored so far:", countImages)
-                # print(hL, wL)
-                if hL >= 40 and wL >= 40:
-                    cv2.imwrite("data/" + dir + "/right_eye" + str(randint(1, 10000)) + ".jpg", roi_left)
-                    countImages += 1
+                if roi_left.any():
+                    roi_left = cv2.cvtColor(roi_left, cv2.COLOR_BGR2GRAY)
+                    roi_left = cv2.equalizeHist(roi_left)
+                    
+                    # print(roi_left.shape)
+                    hL, wL = roi_left.shape
+                    # print("Images stored so far:", countImages)
+                    # print(hL, wL)
+                    if hL >= 40 and wL >= 40:
+                        cv2.imwrite("data/" + dir + "/right_eye" + str(randint(1, 10000)) + ".jpg", roi_left)
+                        countImages += 1
                 
                 roi_right = image[right_eye_landmarks[0][1]:right_eye_landmarks[2][1], right_eye_landmarks[0][0]:right_eye_landmarks[2][0]]
-                roi_right = cv2.cvtColor(roi_right, cv2.COLOR_BGR2GRAY)
-                roi_right = cv2.equalizeHist(roi_right)
+                if roi_right.any():   
+                    roi_right = cv2.cvtColor(roi_right, cv2.COLOR_BGR2GRAY)
+                    roi_right = cv2.equalizeHist(roi_right)
 
 
-                hR, wR = roi_right.shape
+                    hR, wR = roi_right.shape
 
-                if hR >= 40 and wR >= 40:
-                    cv2.imwrite("data/" + dir + "/left_eye" + str(randint(1, 10000)) + ".jpg", roi_right)
-                    countImages += 1
+                    if hR >= 40 and wR >= 40:
+                        cv2.imwrite("data/" + dir + "/left_eye" + str(randint(1, 10000)) + ".jpg", roi_right)
+                        countImages += 1
 
         # cv2.imshow("Image", image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -83,7 +85,7 @@ def captureImages(path, state):
 
 
 if __name__ == "__main__":
-    directory = "video1"
+    directory = "video"
     categories = ["focused", "distracted"]
 
     print("Count of videos: ", 2*len(os.listdir("video/focused")))

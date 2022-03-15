@@ -10,27 +10,30 @@ import imutils
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-distract_model = load_model("model_50img_t1_28v_colab.hdf5", compile=False)
+distract_model = load_model("model_25img_t1_42v_colab.hdf5", compile=False)
 img_width, img_height = 40, 40
 
 
 def predict(image, landmarks):
     roi = image[landmarks[0][1]:landmarks[2][1], landmarks[0][0]:landmarks[2][0]]
-    roi = cv2.resize(roi, (img_width, img_height))
-    
-    roi = roi.astype("float") / 255.0
-    roi = img_to_array(roi)
-    roi = np.expand_dims(roi, axis=0)
+    if roi.any():
+        roi = cv2.resize(roi, (img_width, img_height))
+        
+        roi = roi.astype("float") / 255.0
+        roi = img_to_array(roi)
+        roi = np.expand_dims(roi, axis=0)
 
-    prediction = distract_model.predict(roi)
-    return prediction
+        prediction = distract_model.predict(roi)
+        return prediction
 
 def detect_distraction():
     cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture("/home/bsar/Downloads/distracted_Trim.mp4.mp4")
     while True:
         ret, image = cap.read()
+        # image = imutils.resize(image, width=400)
         if ret == False:
-            continue
+            break
 
         height, width, _ = image.shape
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
