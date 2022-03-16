@@ -10,7 +10,7 @@ import imutils
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
-distract_model = load_model("model_25img_t1_42v_colab.hdf5", compile=False)
+distract_model = load_model("model_25img_t1_34v_colab.hdf5", compile=False)
 img_width, img_height = 40, 40
 
 
@@ -68,7 +68,7 @@ def detect_distraction():
             probs.append(predict(image, left_eye_landmarks))
             probs.append(predict(image, right_eye_landmarks))
 
-            # print(probs)
+            print(probs)
             probs_mean = np.mean(probs)
 
             if probs_mean <= 0.5:
