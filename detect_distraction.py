@@ -171,6 +171,8 @@ class Engagement_Detection:
     def here_it_goes(self):
         report = []
         cap = cv2.VideoCapture(0)
+        count = 0
+
         while(True):
             ret, frame = cap.read()
             if(ret==False):
@@ -179,11 +181,14 @@ class Engagement_Detection:
             
             emotion = self.facial_emotion(frame)
             focused_level = self.detect_distraction(frame)
-
             # index = self.get_concentration_index(focused_level, emotion)
             # report.append(index)
 
             cv2.imshow("Engagement Detection", frame)
+            # taking 7th frame
+            count += 7
+            cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
