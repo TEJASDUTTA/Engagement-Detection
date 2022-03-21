@@ -8,6 +8,7 @@ from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import imutils
 import dlib
+import os
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
@@ -31,6 +32,7 @@ emotions = {
     6: { "emotion": "Neutral",
         "color": (108, 72, 200) }
 }
+emo = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Suprise", "Neutral"]
 
 faceLandmarks = "shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
@@ -98,7 +100,7 @@ class Engagement_Detection:
             except:
                 pass
 
-            if probs_mean <= 0.5:
+            if probs_mean <= 0.4:
                 cv2.putText(image, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
@@ -142,10 +144,13 @@ class Engagement_Detection:
             grayFace = np.expand_dims(grayFace, 0)
             grayFace = np.expand_dims(grayFace, -1)
             emotion_prediction = emotionClassifier.predict(grayFace)
+            # for i in range(7):
+            #     cv2.putText(frame, emotions[i]['emotion'] + " "+str(emotion_prediction[0][i]),
+            #                 (10, 10+i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+            #                 (0, 0, 0), 1, cv2.LINE_AA)
+            os.system("cls")
             for i in range(7):
-                cv2.putText(frame, emotions[i]['emotion'] + " "+str(emotion_prediction[0][i]),
-                            (10, 10+i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                            (0, 0, 0), 1, cv2.LINE_AA)
+                print(emo[i], int(100*emotion_prediction[0][i]))
 
             emotion_probability = np.max(emotion_prediction)
             if (emotion_probability > 0.36):
@@ -157,7 +162,7 @@ class Engagement_Detection:
                          thickness=2)
                 cv2.rectangle(frame, (x + 20, y + h + 20), (x + 110, y + h + 40),
                               color, -1)
-                cv2.putText(frame, emotions[emotion_label_arg]['emotion'],
+                cv2.putText(frame, emotions[emotion_label_arg]['emotion']+ " "+str(int(100*emotion_prediction[0][emotion_label_arg])),
                             (x + 25, y + h + 36), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             (255, 255, 255), 1, cv2.LINE_AA)
             else:
@@ -186,7 +191,7 @@ class Engagement_Detection:
 
             cv2.imshow("Engagement Detection", frame)
             # taking 7th frame
-            count += 7
+            count += 30
             cap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
