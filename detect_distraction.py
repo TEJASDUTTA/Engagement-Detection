@@ -41,8 +41,8 @@ predictor = dlib.shape_predictor(faceLandmarks)
 emotionModelPath = "models/emotionModel.hdf5"
 emotionClassifier = load_model(emotionModelPath, compile=False)
 emotionTargetSize = emotionClassifier.input_shape[1:3]
-        
 class Engagement_Detection:
+    currState = ""
     def __init__(self):
         pass
 
@@ -101,10 +101,12 @@ class Engagement_Detection:
                 pass
 
             if probs_mean <= 0.4:
+                self.currState = "Distracted"
                 cv2.putText(image, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
             else:
+                self.currState = "Focused"
                 cv2.putText(image, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
@@ -148,9 +150,10 @@ class Engagement_Detection:
             #     cv2.putText(frame, emotions[i]['emotion'] + " "+str(emotion_prediction[0][i]),
             #                 (10, 10+i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
             #                 (0, 0, 0), 1, cv2.LINE_AA)
-            os.system("cls")
+            os.system("clear")
+            print("[*] Current State: " + self.currState)
             for i in range(7):
-                print(emo[i], int(100*emotion_prediction[0][i]))
+                print("[*] Current Emotion:", emo[i], int(100*emotion_prediction[0][i]))
 
             emotion_probability = np.max(emotion_prediction)
             if (emotion_probability > 0.36):
