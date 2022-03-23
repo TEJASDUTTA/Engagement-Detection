@@ -59,9 +59,9 @@ class Engagement_Detection:
             prediction = distract_model.predict(roi)
             return prediction
 
-    def detect_distraction(self, image):
-        height, width, _ = image.shape
-        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    def detect_distraction(self, image, image_save):
+        height, width, _ = image_save.shape
+        rgb_image = cv2.cvtColor(image_save, cv2.COLOR_BGR2RGB)
         result = face_mesh.process(rgb_image)
 
         left_eye_landmarks = []
@@ -82,13 +82,13 @@ class Engagement_Detection:
                     else:
                         right_eye_landmarks.append([x,y])
                     j += 1
-                    cv2.circle(image, (x,y), 5, (0, 255, 0), -1)
+                    cv2.circle(image_save, (x,y), 5, (0, 255, 0), -1)
 
 
             draw_lines = [left_eye_landmarks, right_eye_landmarks]
             for i in draw_lines:
                 for j in range(4):
-                    cv2.line(image, i[j], i[(j+1)%4], (0, 255, 0), 1)
+                    cv2.line(image_save, i[j], i[(j+1)%4], (0, 255, 0), 1)
             
             try:
                 probs.append(self.predict(image, left_eye_landmarks))
@@ -102,12 +102,12 @@ class Engagement_Detection:
 
             if probs_mean <= 0.4:
                 self.currState = "Distracted"
-                cv2.putText(image, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                cv2.putText(image_save, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
             else:
                 self.currState = "Focused"
-                cv2.putText(image, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                cv2.putText(image_save, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
         return probs_mean
@@ -127,8 +127,8 @@ class Engagement_Detection:
         h = rect.bottom() - y
         return (x, y, w, h)
 
-    def facial_emotion(self, frame):
-        grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    def facial_emotion(self, frame, image_save):
+        grayFrame = cv2.cvtColor(image_save, cv2.COLOR_BGR2GRAY)
         rects = detector(grayFrame, 0)
         for rect in rects:
             shape = predictor(grayFrame, rect)
@@ -159,18 +159,18 @@ class Engagement_Detection:
             if (emotion_probability > 0.36):
                 emotion_label_arg = np.argmax(emotion_prediction)
                 color = emotions[emotion_label_arg]['color']
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                cv2.line(frame, (x, y + h), (x + 20, y + h + 20),
+                cv2.rectangle(image_save, (x, y), (x + w, y + h), color, 2)
+                cv2.line(image_save, (x, y + h), (x + 20, y + h + 20),
                          color,
                          thickness=2)
-                cv2.rectangle(frame, (x + 20, y + h + 20), (x + 110, y + h + 40),
+                cv2.rectangle(image_save, (x + 20, y + h + 20), (x + 110, y + h + 40),
                               color, -1)
-                cv2.putText(frame, emotions[emotion_label_arg]['emotion']+ " "+str(int(100*emotion_prediction[0][emotion_label_arg])),
+                cv2.putText(image_save, emotions[emotion_label_arg]['emotion']+ " "+str(int(100*emotion_prediction[0][emotion_label_arg])),
                             (x + 25, y + h + 36), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             (255, 255, 255), 1, cv2.LINE_AA)
             else:
                 color = (255, 255, 255)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                cv2.rectangle(image_save, (x, y), (x + w, y + h), color, 2)
 
             return emotion_probability
 
@@ -186,13 +186,20 @@ class Engagement_Detection:
             if(ret==False):
                 break
 
-            
-            emotion = self.facial_emotion(frame)
-            focused_level = self.detect_distraction(frame)
+            image_save = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            image_save = cv2.equalizeHist(image_save)
+
+            cv2.imwrite("currentFrame.jpg", image_save)
+
+            image_save = cv2.imread("currentFrame.jpg")
+
+            focused_level = self.detect_distraction(frame, image_save)
+            emotion = self.facial_emotion(frame, image_save)
             # index = self.get_concentration_index(focused_level, emotion)
             # report.append(index)
 
             cv2.imshow("Engagement Detection", frame)
+            cv2.imshow("Engagement Detection Hist Eq", image_save)
             # taking 7th frame
             count += 30
             cap.set(cv2.CAP_PROP_POS_FRAMES, count)
