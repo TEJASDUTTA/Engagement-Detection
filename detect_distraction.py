@@ -148,7 +148,11 @@ class Engagement_Detection:
             #     cv2.putText(frame, emotions[i]['emotion'] + " "+str(emotion_prediction[0][i]),
             #                 (10, 10+i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
             #                 (0, 0, 0), 1, cv2.LINE_AA)
-            os.system("cls")
+            try:
+                os.system("cls")
+            except:
+                os.system("clear")
+            
             for i in range(7):
                 print(emo[i], int(100*emotion_prediction[0][i]))
 
