@@ -33,6 +33,7 @@ emotions = {
         "color": (108, 72, 200) }
 }
 emo = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Suprise", "Neutral"]
+emotion_weights = [0.25, 0.2, 0.3, 0.6, 0.3, 0.6, 0.9]
 
 faceLandmarks = "shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
@@ -41,6 +42,7 @@ predictor = dlib.shape_predictor(faceLandmarks)
 emotionModelPath = "models/emotionModel.hdf5"
 emotionClassifier = load_model(emotionModelPath, compile=False)
 emotionTargetSize = emotionClassifier.input_shape[1:3]
+
 class Engagement_Detection:
     currState = ""
     def __init__(self):
@@ -59,7 +61,7 @@ class Engagement_Detection:
             prediction = distract_model.predict(roi)
             return prediction
 
-    def detect_distraction(self, image):
+    def detect_distraction(self, image, fcopy):
         height, width, _ = image.shape
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         result = face_mesh.process(rgb_image)
@@ -101,13 +103,13 @@ class Engagement_Detection:
                 pass
 
             if probs_mean <= 0.4:
-                self.currState = "Distracted"
-                cv2.putText(image, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                self.currState = "Distracted "+str(int(100*probs_mean))
+                cv2.putText(fcopy, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
             else:
-                self.currState = "Focused"
-                cv2.putText(image, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                self.currState = "Focused "+str(int(100*probs_mean))
+                cv2.putText(fcopy, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
         return probs_mean
@@ -127,9 +129,10 @@ class Engagement_Detection:
         h = rect.bottom() - y
         return (x, y, w, h)
 
-    def facial_emotion(self, frame):
+    def facial_emotion(self, frame, fcopy):
         grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = detector(grayFrame, 0)
+        emotion_prediction = []
         for rect in rects:
             shape = predictor(grayFrame, rect)
             points = self.shapePoints(shape)
@@ -146,11 +149,7 @@ class Engagement_Detection:
             grayFace = np.expand_dims(grayFace, 0)
             grayFace = np.expand_dims(grayFace, -1)
             emotion_prediction = emotionClassifier.predict(grayFace)
-            # for i in range(7):
-            #     cv2.putText(frame, emotions[i]['emotion'] + " "+str(emotion_prediction[0][i]),
-            #                 (10, 10+i*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-            #                 (0, 0, 0), 1, cv2.LINE_AA)
-
+            
             try:
                 os.system("cls")
             except:
@@ -164,22 +163,43 @@ class Engagement_Detection:
             if (emotion_probability > 0.36):
                 emotion_label_arg = np.argmax(emotion_prediction)
                 color = emotions[emotion_label_arg]['color']
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                cv2.line(frame, (x, y + h), (x + 20, y + h + 20),
+                cv2.rectangle(fcopy, (x, y), (x + w, y + h), color, 2)
+                cv2.line(fcopy, (x, y + h), (x + 20, y + h + 20),
                          color,
                          thickness=2)
-                cv2.rectangle(frame, (x + 20, y + h + 20), (x + 110, y + h + 40),
+                cv2.rectangle(fcopy, (x + 20, y + h + 20), (x + 110, y + h + 40),
                               color, -1)
-                cv2.putText(frame, emotions[emotion_label_arg]['emotion']+ " "+str(int(100*emotion_prediction[0][emotion_label_arg])),
+                cv2.putText(fcopy, emotions[emotion_label_arg]['emotion']+ " "+str(int(100*emotion_prediction[0][emotion_label_arg])),
                             (x + 25, y + h + 36), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             (255, 255, 255), 1, cv2.LINE_AA)
             else:
                 color = (255, 255, 255)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                cv2.rectangle(fcopy, (x, y), (x + w, y + h), color, 2)
 
-            return emotion_probability
+        return emotion_prediction
 
-        return 0
+
+    def get_concentration_index(self, focused_level, emotion_prediction, fcopy):
+        emotion_probability = np.max(emotion_prediction)
+        emotion_label_arg = np.argmax(emotion_prediction)
+        CI = (emotion_probability*emotion_weights[emotion_label_arg])
+
+        
+        if(CI > 0.65):
+            cv2.putText(fcopy, "Highly engaged",
+                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 0), 2, cv2.LINE_AA)
+        elif(CI > 0.25):
+            cv2.putText(fcopy, "Nominally engaged",
+                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 0), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(fcopy, "Pay Attention",
+                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 0), 2, cv2.LINE_AA)
+
+        return CI
+
 
     def here_it_goes(self):
         report = []
@@ -188,17 +208,24 @@ class Engagement_Detection:
 
         while(True):
             ret, frame = cap.read()
+            fcopy = frame.copy()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frame = cv2.equalizeHist(frame)
+
+            frame = cv2.merge([frame,frame,frame])
+            
             if(ret==False):
                 break
 
             
-            emotion = self.facial_emotion(frame)
-            focused_level = self.detect_distraction(frame)
-            # index = self.get_concentration_index(focused_level, emotion)
-            # report.append(index)
+            emotion_prediction = self.facial_emotion(frame, fcopy)
+            focused_level = self.detect_distraction(frame, fcopy)
+            
+            index = self.get_concentration_index(focused_level, emotion_prediction, fcopy)
+            report.append(index)
 
-            cv2.imshow("Engagement Detection", frame)
-            # taking 7th frame
+            cv2.imshow("Engagement Detection", fcopy)
+            # taking 30th frame
             count += 30
             cap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
