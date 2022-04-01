@@ -9,6 +9,7 @@ from keras.preprocessing.image import img_to_array
 import imutils
 import dlib
 import os
+import matplotlib.pyplot as plt
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
@@ -180,6 +181,8 @@ class Engagement_Detection:
 
 
     def get_concentration_index(self, focused_level, emotion_prediction, fcopy):
+        if(len(emotion_prediction)==0):
+            return 0
         emotion_probability = np.max(emotion_prediction)
         emotion_label_arg = np.argmax(emotion_prediction)
         CI = (emotion_probability*emotion_weights[emotion_label_arg])
@@ -203,10 +206,17 @@ class Engagement_Detection:
 
     def here_it_goes(self):
         report = []
+        list_of_ci = []
         cap = cv2.VideoCapture(0)
         count = 0
 
+        fig = plt.figure(1)
+
+        plt.ylabel("Engagement Level")
+        plt.axis([0, 50, 0, 1])
+
         while(True):
+            plt.clf()
             ret, frame = cap.read()
             fcopy = frame.copy()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -222,7 +232,16 @@ class Engagement_Detection:
             focused_level = self.detect_distraction(frame, fcopy)
             
             index = self.get_concentration_index(focused_level, emotion_prediction, fcopy)
-            report.append(index)
+            list_of_ci.append(index)
+
+            if(len(list_of_ci) == 5):
+                report.append(np.mean(np.array(list_of_ci)))
+                plt.ylabel("Engagement Level")
+                plt.axis([0, 50, 0, 1])
+                plt.plot(report)
+                plt.pause(0.001)
+                list_of_ci = []
+
 
             cv2.imshow("Engagement Detection", fcopy)
             # taking 30th frame
@@ -231,9 +250,12 @@ class Engagement_Detection:
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            
+        plt.show()
 
-        # report = np.array(report)
+        report = np.array(report)
+        print(report)
+        # plt.plot(report)
+        # plt.show()
         # overall_index = np.mean(report)
 
         # if(overall_index > 0.65):
