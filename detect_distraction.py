@@ -35,6 +35,7 @@ emotions = {
 }
 emo = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Suprise", "Neutral"]
 emotion_weights = [0.25, 0.2, 0.3, 0.6, 0.3, 0.6, 0.9]
+# emotion_weights = [0.5, 0.5, 0.5, 0.9, 0.5, 0.9, 0.9]
 
 faceLandmarks = "shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
@@ -105,12 +106,12 @@ class Engagement_Detection:
 
             if probs_mean <= 0.4:
                 self.currState = "Distracted "+str(int(100*probs_mean))
-                cv2.putText(fcopy, "DISTRACTED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                cv2.putText(fcopy, "Distracted", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
             else:
                 self.currState = "Focused "+str(int(100*probs_mean))
-                cv2.putText(fcopy, "FOCUSED", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
+                cv2.putText(fcopy, "Focused", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 
             1, (0,0,255), 3, cv2.LINE_AA)
 
         return probs_mean
@@ -183,87 +184,92 @@ class Engagement_Detection:
     def get_concentration_index(self, focused_level, emotion_prediction, fcopy):
         if(len(emotion_prediction)==0):
             return 0
+
+        factor=1.0
+        if(focused_level<=0.4):
+            factor=0.5
+
         emotion_probability = np.max(emotion_prediction)
         emotion_label_arg = np.argmax(emotion_prediction)
-        CI = (emotion_probability*emotion_weights[emotion_label_arg])
-
-        
-        if(CI > 0.65):
-            cv2.putText(fcopy, "Highly engaged",
-                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                            (0, 0, 0), 2, cv2.LINE_AA)
-        elif(CI > 0.25):
-            cv2.putText(fcopy, "Nominally engaged",
-                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                            (0, 0, 0), 2, cv2.LINE_AA)
-        else:
-            cv2.putText(fcopy, "Pay Attention",
-                            (20, 400), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                            (0, 0, 0), 2, cv2.LINE_AA)
-
+        CI = emotion_probability*emotion_weights[emotion_label_arg]*factor    
         return CI
 
 
     def here_it_goes(self):
         report = []
         list_of_ci = []
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(r"C:\Users\gupta\OneDrive\Pictures\Mini Project\a.mp4")
+        # cap = cv2.VideoCapture(0)
         count = 0
 
         fig = plt.figure(1)
 
         plt.ylabel("Engagement Level")
-        plt.axis([0, 50, 0, 1])
+        plt.axis([0, 100, -0.2, 1])
 
         while(True):
             plt.clf()
             ret, frame = cap.read()
+
+            if(ret==False):
+                break
+
             fcopy = frame.copy()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame = cv2.equalizeHist(frame)
 
             frame = cv2.merge([frame,frame,frame])
-            
-            if(ret==False):
-                break
 
-            
             emotion_prediction = self.facial_emotion(frame, fcopy)
             focused_level = self.detect_distraction(frame, fcopy)
             
             index = self.get_concentration_index(focused_level, emotion_prediction, fcopy)
             list_of_ci.append(index)
 
-            if(len(list_of_ci) == 5):
+            if(len(list_of_ci) == 30):
                 report.append(np.mean(np.array(list_of_ci)))
-                plt.ylabel("Engagement Level")
-                plt.axis([0, 50, 0, 1])
-                plt.plot(report)
-                plt.pause(0.001)
+                # plt.ylabel("Engagement Level")
+                # plt.axis([0, 50, 0, 1])
+                # plt.plot(report[-50:])
+                # plt.pause(0.00001)
                 list_of_ci = []
+
+            val=np.mean(np.array(list_of_ci))
+            if(val > 0.65):
+                cv2.putText(fcopy, "Highly engaged",
+                                (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255), 3, cv2.LINE_AA)
+            elif(val > 0.25):
+                cv2.putText(fcopy, "Nominally engaged",
+                                (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255), 3, cv2.LINE_AA)
+            else:
+                cv2.putText(fcopy, "Pay Attention",
+                                (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255), 3, cv2.LINE_AA)
+            print(report)
 
 
             cv2.imshow("Engagement Detection", fcopy)
             # taking 30th frame
-            count += 30
+            count += 1
             cap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        plt.show()
+
 
         report = np.array(report)
-        print(report)
+        plt.ylabel("Engagement Level")
+        plt.axis([0, 100, -0.2, 1])
+        plt.plot(report)
+        # plt.show()
+        plt.savefig("image")
+
+        
+        # print(report)
         # plt.plot(report)
         # plt.show()
-        # overall_index = np.mean(report)
-
-        # if(overall_index > 0.65):
-        #     print("You were highly engaged")
-        # elif(overall_index > 0.25):
-        #     print("You were nominally engaged")
-        # else:
-        #     print("Pay attention")
 
         cap.release()
         cv2.destroyAllWindows()
