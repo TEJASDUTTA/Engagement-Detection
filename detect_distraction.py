@@ -10,6 +10,7 @@ import imutils
 import dlib
 import os
 import matplotlib.pyplot as plt
+from sys import platform
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh()
@@ -152,10 +153,11 @@ class Engagement_Detection:
             grayFace = np.expand_dims(grayFace, -1)
             emotion_prediction = emotionClassifier.predict(grayFace)
             
-            try:
-                os.system("cls")
-            except:
+            if platform in ["linux", "linux2", "darwin"]:
                 os.system("clear")
+            elif platform == "win32":
+                os.system("cls")
+            
 
             print(self.currState)
             for i in range(7):
@@ -198,8 +200,8 @@ class Engagement_Detection:
     def here_it_goes(self):
         report = []
         list_of_ci = []
-        cap = cv2.VideoCapture(r"C:\Users\gupta\OneDrive\Pictures\Mini Project\a.mp4")
-        # cap = cv2.VideoCapture(0)
+        # cap = cv2.VideoCapture(r"C:\Users\gupta\OneDrive\Pictures\Mini Project\a.mp4")
+        cap = cv2.VideoCapture(0)
         count = 0
 
         fig = plt.figure(1)
@@ -252,7 +254,7 @@ class Engagement_Detection:
 
             cv2.imshow("Engagement Detection", fcopy)
             # taking 30th frame
-            count += 1
+            count += 30
             cap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
