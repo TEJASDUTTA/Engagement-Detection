@@ -3,6 +3,7 @@
 ## Table of contents
 * [Purpose](#purpose)
 * [Demo](#demo)
+* [PPT Link](#ppt-link)
 * [Technologies Used](#technologies-used)
 * [Intallation](#installation)
 
@@ -15,6 +16,8 @@ So to tackle the above issue, we decided to train and use an ML model to find if
 	
 ## Demo
 
+## PPT Link
+https://www.canva.com/design/DAE4ZUNpPvU/rUYQWCLtjN2tiNrP7mCCuQ/view?utm_content=DAE4ZUNpPvU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 ## Technologies Used
 
 Project is created using:
