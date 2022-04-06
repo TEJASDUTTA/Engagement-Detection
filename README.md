@@ -27,7 +27,7 @@ Project is created using:
 * Dlib
 
 ## Installation
-* First install the dependencies:
+* First install the required dependencies:
 
 ```
 pip install -r requirements.txt
