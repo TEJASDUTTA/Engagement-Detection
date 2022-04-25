@@ -2,7 +2,7 @@
 
 ## Table of contents
 * [Purpose](#purpose)
-* [Demo](#demo)
+* [Link to all documents and resources](#link-to-all-documents-and-resources)
 * [PPT Link](#ppt-link)
 * [Technologies Used](#technologies-used)
 * [Intallation](#installation)
@@ -14,8 +14,8 @@ The main problem that we have identified was the lack of attention many students
 
 So to tackle the above issue, we decided to train and use an ML model to find if a student is engaged or not and, if found, then alert them likewise.
 	
-## Demo
-
+## Link to all documents and resources
+https://docs.google.com/document/d/17mkY5cSGTNwVADTvZjCiux_yMZlICsYhcpUTDm-pEeg/edit?usp=sharing
 ## PPT Link
 https://www.canva.com/design/DAE4ZUNpPvU/rUYQWCLtjN2tiNrP7mCCuQ/view?utm_content=DAE4ZUNpPvU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 ## Technologies Used
